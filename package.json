@@ -1,6 +1,6 @@
 {
   "name": "@hornwitser/fagc_integration",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Clusterio plugin for integrating with Factorio Anti-Greifer Cooperation",
   "main": "index.js",
   "scripts": {
@@ -24,21 +24,23 @@
   },
   "homepage": "https://github.com/Hornwitser/fagc_integration#readme",
   "peerDependencies": {
-    "@clusterio/lib": "^2.0.0-alpha.10"
+    "@clusterio/lib": "^2.0.0-alpha.13"
   },
   "devDependencies": {
+    "@babel/core": "^7.18.2",
     "@babel/preset-react": "^7.12.5",
-    "@clusterio/web_ui": "^2.0.0-alpha.5",
+    "@clusterio/lib": "^2.0.0-alpha.13",
+    "@clusterio/web_ui": "^2.0.0-alpha.13",
     "babel-loader": "^8.2.0",
     "eslint": "^7.13.0",
     "null-loader": "^4.0.1",
     "react": "^16.13.1",
-    "webpack": "^5.4.0",
-    "webpack-cli": "^4.2.0",
+    "webpack": "^5.73.0",
+    "webpack-cli": "^4.9.2",
     "webpack-merge": "^5.3.0"
   },
   "dependencies": {
-    "fagc-api-wrapper": "^1.24.0"
+    "fagc-api-wrapper": "^1.28.2"
   },
   "publishConfig": {
     "access": "public"
