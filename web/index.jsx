@@ -224,7 +224,7 @@ function DiscordServerPage() {
 				description={
 					ownGuild.error
 						? ownGuild.error
-						: `You need to configure a Discord server in the master config to use this page.`
+						: `You need to configure a Discord server in the controller config to use this page.`
 				}
 				type={ownGuild.error ? "error" : "info"}
 			/>

@@ -20,21 +20,21 @@ function stringifyDates(report) {
 	};
 }
 
-class MasterPlugin extends libPlugin.BaseMasterPlugin {
+class ControllerPlugin extends libPlugin.BaseControllerPlugin {
 	async init() {
 		this.createFagcWrapper();
 	}
 
 	createFagcWrapper() {
 		this.fagc = new FAGCWrapper({
-			apiurl: this.master.config.get("fagc_integration.api_url"),
-			apikey: this.master.config.get("fagc_integration.api_key"),
+			apiurl: this.controller.config.get("fagc_integration.api_url"),
+			apikey: this.controller.config.get("fagc_integration.api_key"),
 			// socketurl: ??,
 			// enableWebSocket: true,
 		});
 	}
 
-	async onMasterConfigFieldChanged(group, field, prev) {
+	async onControllerConfigFieldChanged(group, field, prev) {
 		if (group.name === "fagc_integration") {
 			if (field === "api_url") {
 				this.fagc.setdata({ url: group.get(field) });
@@ -102,7 +102,7 @@ class MasterPlugin extends libPlugin.BaseMasterPlugin {
 	}
 
 	async getOwnGuildRequestHandler() {
-		let guildId = this.master.config.get("fagc_integration.discord_guild_id");
+		let guildId = this.controller.config.get("fagc_integration.discord_guild_id");
 		if (!guildId) {
 			return { guild: null };
 		}
@@ -110,7 +110,7 @@ class MasterPlugin extends libPlugin.BaseMasterPlugin {
 	}
 
 	async setOwnGuildConfigRequestHandler(message) {
-		let guildId = this.master.config.get("fagc_integration.discord_guild_id");
+		let guildId = this.controller.config.get("fagc_integration.discord_guild_id");
 		if (!guildId) {
 			throw new libErrors.RequestError("Guild ID not configured");
 		}
@@ -129,5 +129,5 @@ class MasterPlugin extends libPlugin.BaseMasterPlugin {
 }
 
 module.exports = {
-	MasterPlugin,
+	ControllerPlugin,
 };

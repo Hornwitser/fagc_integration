@@ -2,10 +2,10 @@
 const { libConfig, libLink, libUsers } = require("@clusterio/lib");
 
 
-class MasterConfigGroup extends libConfig.PluginConfigGroup {}
-MasterConfigGroup.defaultAccess = ["master", "slave", "control"];
-MasterConfigGroup.groupName = "fagc_integration";
-MasterConfigGroup.define({
+class ControllerConfigGroup extends libConfig.PluginConfigGroup {}
+ControllerConfigGroup.defaultAccess = ["controller", "host", "control"];
+ControllerConfigGroup.groupName = "fagc_integration";
+ControllerConfigGroup.define({
 	name: "api_url",
 	title: "API URL",
 	description: "URL to FAGC API.",
@@ -13,32 +13,32 @@ MasterConfigGroup.define({
 	optional: true,
 	initial_value: "https://factoriobans.club/",
 });
-MasterConfigGroup.define({
+ControllerConfigGroup.define({
 	name: "api_key",
 	title: "API Key",
 	description: "Authentication key for FAGC API.",
 	type: "string",
 	optional: true,
 });
-MasterConfigGroup.define({
+ControllerConfigGroup.define({
 	name: "discord_guild_id",
 	title: "Discord Guild ID",
 	description: "Discord guild to use as basis for community settings.",
 	type: "string",
 	optional: true,
 });
-MasterConfigGroup.finalize();
+ControllerConfigGroup.finalize();
 
 libUsers.definePermission({
 	name: "fagc_integration.guild.get_own",
 	title: "Get details for Discord server",
-	description: "Get FAGC details for the Discord Server set in the master config.",
+	description: "Get FAGC details for the Discord Server set in the controller config.",
 	grantByDefault: true,
 });
 libUsers.definePermission({
 	name: "fagc_integration.guild.set_own_config",
 	title: "Set details for Discord server",
-	description: "Set FAGC details for the Discord Server set in the master config.",
+	description: "Set FAGC details for the Discord Server set in the controller config.",
 });
 libUsers.definePermission({
 	name: "fagc_integration.community.get_own",
@@ -136,8 +136,8 @@ module.exports = {
 	title: "FAGC Integration",
 	description: "Report players through Factorio Anti-Greifer Cooperation",
 
-	masterEntrypoint: "master",
-	MasterConfigGroup,
+	controllerEntrypoint: "controller",
+	ControllerConfigGroup,
 
 	webEntrypoint: "./web",
 	routes: [
@@ -153,7 +153,7 @@ module.exports = {
 	messages: {
 		getOwnCommunity: new libLink.Request({
 			type: "fagc_integration:get_own_community",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.community.get_own",
 			responseProperties: {
 				"community": {
@@ -166,7 +166,7 @@ module.exports = {
 		}),
 		listCommunities: new libLink.Request({
 			type: "fagc_integration:list_communities",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.community.list",
 			responseProperties: {
 				"list": {
@@ -177,7 +177,7 @@ module.exports = {
 		}),
 		listCategories: new libLink.Request({
 			type: "fagc_integration:list_categories",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.category.list",
 			responseProperties: {
 				"list": {
@@ -196,7 +196,7 @@ module.exports = {
 		}),
 		listReports: new libLink.Request({
 			type: "fagc_integration:list_reports",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.report.list",
 			requestRequired: [],
 			requestProperties: {
@@ -211,7 +211,7 @@ module.exports = {
 		}),
 		getReport: new libLink.Request({
 			type: "fagc_integration:get_report",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.report.get",
 			requestProperties: {
 				"id": { type: "string" },
@@ -227,7 +227,7 @@ module.exports = {
 		}),
 		createReport: new libLink.Request({
 			type: "fagc_integration:create_report",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.report.create",
 			requestProperties: {
 				"report": {
@@ -251,7 +251,7 @@ module.exports = {
 		}),
 		revokeReport: new libLink.Request({
 			type: "fagc_integration:revoke_report",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.report.revoke",
 			requestProperties: {
 				"reportId": { type: "string" },
@@ -260,7 +260,7 @@ module.exports = {
 		}),
 		getRevocation: new libLink.Request({
 			type: "fagc_integration:get_revocation",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.revocation.get",
 			requestProperties: {
 				"id": { type: "string" },
@@ -276,7 +276,7 @@ module.exports = {
 		}),
 		listRevocations: new libLink.Request({
 			type: "fagc_integration:list_revocations",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.revocation.list",
 			responseProperties: {
 				"list": {
@@ -287,7 +287,7 @@ module.exports = {
 		}),
 		getOwnGuild: new libLink.Request({
 			type: "fagc_integration:get_own_guild",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.guild.get_own",
 			responseProperties: {
 				"guild": {
@@ -307,7 +307,7 @@ module.exports = {
 		}),
 		setOwnGuildConfig: new libLink.Request({
 			type: "fagc_integration:set_own_guild_config",
-			links: ["control-master"],
+			links: ["control-controller"],
 			permission: "fagc_integration.guild.set_own_config",
 			requestRequired: [],
 			requestProperties: {
