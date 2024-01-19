@@ -1,13 +1,14 @@
 import React, { useContext, useEffect, useState } from "react";
 import {
-	Alert, Button, Col, Descriptions, Form, Input, Modal, PageHeader,
+	Alert, Button, Col, Descriptions, Form, Input, Modal,
 	Popconfirm, Row, Select, Spin, Table, Tag, Typography,
 } from "antd";
 import events from "events";
-import { useHistory, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-import * as lib from "@clusterio/lib";
-import { notifyErrorHandler, useAccount, PageLayout, SectionHeader, ControlContext } from "@clusterio/web_ui";
+import {
+	notifyErrorHandler, useAccount, BaseWebPlugin, PageHeader, PageLayout, SectionHeader, ControlContext,
+} from "@clusterio/web_ui";
 import info from "../info";
 
 const { Title } = Typography;
@@ -29,9 +30,9 @@ function useCategories() {
 
 		if (!categoriesEmitter) {
 			categoriesEmitter = new events.EventEmitter();
-			info.messages.listCategories.send(control).then(result => {
-				cachedCategories = result.list;
-				categoriesEmitter.emit("set", result.list);
+			control.send(new info.ListCategoriesRequest()).then(list => {
+				cachedCategories = list;
+				categoriesEmitter.emit("set", list);
 			}).catch(notifyErrorHandler("Error fetching categories"));
 		}
 
@@ -53,11 +54,11 @@ function useOwnGuild() {
 	let [guild, setGuild] = useState({ loading: true });
 
 	useEffect(() => {
-		info.messages.getOwnGuild.send(control).then(result => {
-			if (!result.guild) {
+		control.send(new info.GetOwnGuildRequest()).then(resultGuild => {
+			if (!resultGuild) {
 				setGuild({ missing: true });
 			} else {
-				setGuild(result.guild);
+				setGuild(resultGuild);
 			}
 		}).catch(err => {
 			setGuild({ error: err.message });
@@ -80,9 +81,9 @@ function useOwnCommunity() {
 
 		if (!ownCommunityEmitter) {
 			ownCommunityEmitter = new events.EventEmitter();
-			info.messages.getOwnCommunity.send(control).then(result => {
-				cachedOwnCommunity = result.community;
-				ownCommunityEmitter.emit("set", result.community);
+			control.send(new info.GetOwnCommunityRequest()).then(resultCommunity => {
+				cachedOwnCommunity = resultCommunity;
+				ownCommunityEmitter.emit("set", resultCommunity);
 			}).catch(notifyErrorHandler("Error fetching own community"));
 		}
 
@@ -108,9 +109,9 @@ function useCommunities() {
 
 		if (!communitiesEmitter) {
 			communitiesEmitter = new events.EventEmitter();
-			info.messages.listCommunities.send(control).then(result => {
-				cachedCommunities = result.list;
-				communitiesEmitter.emit("set", result.list);
+			control.send(new info.ListCommunitiesRequest()).then(list => {
+				cachedCommunities = list;
+				communitiesEmitter.emit("set", list);
 			}).catch(notifyErrorHandler("Error fetching communities"));
 		}
 
@@ -176,9 +177,9 @@ function GuildMultiConfig(props) {
 					onClick={() => {
 						let newElements = props.form.getFieldValue(props.name)
 						setApplyingElements(true);
-						info.messages.setOwnGuildConfig.send(control, {
+						control.send(new info.SetOwnGuildConfigRequest({
 							[props.name]: newElements,
-						}).then(() => {
+						})).then(() => {
 							setElementsDirty(false);
 							setElementsError(null);
 						}).catch(err => {
@@ -204,20 +205,14 @@ function DiscordServerPage() {
 	const nav = [{ name: "FAGC", }, { name: "Discord Server" }]
 	if (ownGuild.loading) {
 		return <PageLayout nav={nav}>
-			<PageHeader
-				className="site-page-header"
-				title={"Discord Server"}
-			/>
+			<PageHeader title={"Discord Server"} />
 			<Spin size="large" />
 		</PageLayout>;
 	}
 
 	if (ownGuild.missing || ownGuild.error) {
 		return <PageLayout nav={nav}>
-			<PageHeader
-				className="site-page-header"
-				title={"Discord Server"}
-			/>
+			<PageHeader title={"Discord Server"} />
 			<Alert
 				message={ownGuild.error ? "Unexpected error" : `Discord server not configured` }
 				showIcon
@@ -233,19 +228,13 @@ function DiscordServerPage() {
 
 	if (ownGuild.loading) {
 		return <PageLayout nav={nav}>
-			<PageHeader
-				className="site-page-header"
-				title={"Discord Server"}
-			/>
+			<PageHeader title={"Discord Server"} />
 			<Spin size="large" />
 		</PageLayout>;
 	}
 
 	return <PageLayout nav={nav}>
-		<PageHeader
-			className="site-page-header"
-			title={"Discord Server"}
-		/>
+		<PageHeader title={"Discord Server"} />
 		<Form form={form}>
 			<Form.Item label="Trusted Communities">
 				<GuildMultiConfig
@@ -274,16 +263,13 @@ function CommunitiesPage() {
 	let [communities, setCommunities] = useState([]);
 
 	useEffect(() => {
-		info.messages.listCommunities.send(control).then(result => {
-			setCommunities(result.list);
+		control.send(new info.ListCommunitiesRequest()).then(list => {
+			setCommunities(list);
 		}).catch(notifyErrorHandler("Error fetching communities"));
 	}, []);
 
 	return <PageLayout nav={[{ name: "FAGC", }, { name: "Communities" }]}>
-		<PageHeader
-			className="site-page-header"
-			title="Communities"
-		/>
+		<PageHeader title="Communities" />
 		<Table
 			columns={[
 				{
@@ -305,7 +291,7 @@ function CommunitiesPage() {
 				{
 					title: "Guilds",
 					key: "guilds",
-					render: item => item.guildIds.join(", "),
+					render: (_, item) => item.guildIds.join(", "),
 				},
 			]}
 			dataSource={communities}
@@ -318,10 +304,7 @@ function CommunitiesPage() {
 function CategoriesPage() {
 	let categories = useCategories();
 	return <PageLayout nav={[{ name: "FAGC", }, { name: "Categories" }]}>
-		<PageHeader
-			className="site-page-header"
-			title="Categories"
-		/>
+		<PageHeader title="Categories" />
 		<Table
 			columns={[
 				{
@@ -349,7 +332,7 @@ function CategoriesPage() {
 function ReportsTable(props) {
 	let categories = useCategories();
 	let communities = useCommunities();
-	let history = useHistory();
+	let navigate = useNavigate();
 
 	return <Table
 		columns={[
@@ -361,7 +344,7 @@ function ReportsTable(props) {
 			...(!props.revocations ? [{
 				title: "Community",
 				key: "community",
-				render: report => communityName(report.communityId, communities),
+				render: (_, report) => communityName(report.communityId, communities),
 				sorter: (a, b) => strcmp(
 					communityName(a.communityId, communities),
 					communityName(b.communityId, communities)
@@ -376,7 +359,7 @@ function ReportsTable(props) {
 			{
 				title: "Category",
 				key: "categoryId",
-				render: report => categoryName(report.categoryId, categories),
+				render: (_, report) => categoryName(report.categoryId, categories),
 				sorter: (a, b) => strcmp(
 					categoryName(a.categoryId, categories), categoryName(b.categoryId, categories)
 				),
@@ -384,7 +367,7 @@ function ReportsTable(props) {
 			{
 				title: "At",
 				key: "reportedTime",
-				render: report => report.reportedTime.replace("T", " "),
+				render: (_, report) => report.reportedTime.replace("T", " "),
 				sorter: (a, b) => strcmp(a.reportedTime, b.reportedTime),
 				...(!props.includeName ? { defaultSortOrder: "decend" } : {}),
 			},
@@ -393,7 +376,7 @@ function ReportsTable(props) {
 		rowKey={report => report.id}
 		onRow={(report, rowIndex) => ({
 			onClick: event => {
-				history.push(`/fagc/${props.revocations ? "revocations" : "reports"}/${report.id}`);
+				navigate(`/fagc/${props.revocations ? "revocations" : "reports"}/${report.id}`);
 			},
 		})}
 		pagination={false}
@@ -405,16 +388,13 @@ function ReportsPage() {
 	let [reports, setReports] = useState([]);
 
 	useEffect(() => {
-		info.messages.listReports.send(control).then(result => {
-			setReports(result.list);
+		control.send(new info.ListReportsRequest()).then(list => {
+			setReports(list);
 		}).catch(notifyErrorHandler("Error fetching reports"));
 	}, []);
 
 	return <PageLayout nav={[{ name: "FAGC", }, { name: "Reports" }]}>
-		<PageHeader
-			className="site-page-header"
-			title="Reports"
-		/>
+		<PageHeader title="Reports" />
 		<ReportsTable reports={reports} includeName />
 	</PageLayout>;
 }
@@ -422,7 +402,7 @@ function ReportsPage() {
 function ReportPage(props) {
 	let params = useParams();
 	let reportId = params.id;
-	let history = useHistory();
+	let navigate = useNavigate();
 	let control = useContext(ControlContext);
 	let account = useAccount();
 	let [report, setReport] = useState({ loading: true });
@@ -433,17 +413,17 @@ function ReportPage(props) {
 	useEffect(() => {
 		let request;
 		if (props.revocation) {
-			request = info.messages.getRevocation.send(control, { id: reportId }).then(result => {
-				if (result.revocation) {
-					setReport(result.revocation);
+			request = control.send(new info.GetRevocationRequest(reportId)).then(resultRevocation => {
+				if (resultRevocation) {
+					setReport(resultRevocation);
 				} else {
 					setReport({ missing: true })
 				}
 			});
 		} else {
-			request = info.messages.getReport.send(control, { id: reportId }).then(result => {
-				if (result.report) {
-					setReport(result.report);
+			request = control.send(new info.GetReportRequest(reportId)).then(resultReport => {
+				if (resultReport) {
+					setReport(resultReport);
 				} else {
 					setReport({ missing: true })
 				}
@@ -465,20 +445,14 @@ function ReportPage(props) {
 
 	if (report.loading) {
 		return <PageLayout nav={nav}>
-			<PageHeader
-				className="site-page-header"
-				title={title}
-			/>
+			<PageHeader title={title} />
 			<Spin size="large" />
 		</PageLayout>;
 	}
 
 	if (report.missing || report.error) {
 		return <PageLayout nav={nav}>
-			<PageHeader
-				className="site-page-header"
-				title={title}
-			/>
+			<PageHeader title={title} />
 			<Alert
 				message={report.error ? "Unexpected error" : `${type} not found` }
 				showIcon
@@ -490,7 +464,6 @@ function ReportPage(props) {
 
 	return <PageLayout nav={nav}>
 		<PageHeader
-			className="site-page-header"
 			title={title}
 			extra={
 				!props.revocation
@@ -502,10 +475,10 @@ function ReportPage(props) {
 					placement="bottomRight"
 					okButtonProps={{ danger: true }}
 					onConfirm={() => {
-						info.messages.revokeReport.send(
-							control, { reportId: report.id, adminId: report.adminId }
+						control.send(
+							new info.RevokeReportRequest(report.id, report.adminId),
 						).then(() => {
-							history.push(`/fagc/revocations/${report.id}`);
+							navigate(`/fagc/revocations/${report.id}`);
 						}).catch(notifyErrorHandler("Error revoking report"));
 					}}
 				>
@@ -542,24 +515,21 @@ function RevocationsPage() {
 	let [revocations, setRevocations] = useState([]);
 
 	useEffect(() => {
-		info.messages.listRevocations.send(control).then(result => {
-			setRevocations(result.list);
+		control.send(new info.ListRevocationsRequest()).then(list => {
+			setRevocations(list);
 		}).catch(notifyErrorHandler("Error fetching revocations"));
 	}, []);
 
 	return <PageLayout nav={[{ name: "FAGC" }, { name: "Revocations" }]}>
-		<PageHeader
-			className="site-page-header"
-			title="Revocations"
-		/>
+		<PageHeader title="Revocations" />
 		<ReportsTable reports={revocations} revocations includeName />
 	</PageLayout>;
 }
 
 function ReportButton(props) {
 	let control = useContext(ControlContext);
-	let history = useHistory();
-	let [visible, setVisible] = useState(false);
+	let navigate = useNavigate();
+	let [open, setOpen] = useState(false);
 	let [form] = Form.useForm();
 	let categories = useCategories();
 
@@ -570,32 +540,32 @@ function ReportButton(props) {
 			return;
 		}
 
-		let response = await info.messages.createReport.send(control, {
-			report: {
+		let id = await control.send(
+			new info.CreateReportRequest({
 				playername: values.playername,
 				categoryId: values.categoryId,
 				proof: values.proof || undefined,
 				description: values.description,
 				automated: false,
 				adminId: values.adminid,
-			}
-		});
-		setVisible(false);
-		history.push(`/fagc/reports/${response.id}`);
+			}),
+		);
+		setOpen(false);
+		navigate(`/fagc/reports/${id}`);
 	}
 
 	return <>
 		<Button
 			onClick={() => {
-				setVisible(true);
+				setOpen(true);
 			}}
 		>Report</Button>
 		<Modal
 			title="Report Player"
 			okText="Report"
-			visible={visible}
+			open={open}
 			onOk={() => { reportPlayer().catch(notifyErrorHandler("Error reporting player")); }}
-			onCancel={() => { setVisible(false); }}
+			onCancel={() => { setOpen(false); }}
 			destroyOnClose
 		>
 			<Form
@@ -646,8 +616,8 @@ function UserViewPageExtra(props) {
 			return;
 		}
 
-		info.messages.listReports.send(control, { playername: props.user.name }).then(result => {
-			setReports(result.list);
+		control.send(new info.ListReportsRequest(props.user.name)).then(list => {
+			setReports(list);
 		}).catch(notifyErrorHandler("Error fetching reports"));
 	}, [props.user.name]);
 
@@ -669,7 +639,7 @@ function UserViewPageExtra(props) {
 }
 
 
-export class WebPlugin extends lib.BaseWebPlugin {
+export class WebPlugin extends BaseWebPlugin {
 	async init() {
 		this.pages = [
 			{
@@ -715,7 +685,8 @@ export class WebPlugin extends lib.BaseWebPlugin {
 			{
 				path: "/fagc/revocations/:id",
 				sidebarPath: "/fagc/revocations",
-				content: <ReportPage revocation />,
+				// Force remount by changing key when switching from report to revocation
+				content: <ReportPage revocation key="revocation" />,
 			},
 		];
 

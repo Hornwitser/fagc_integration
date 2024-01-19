@@ -2,7 +2,7 @@
   "name": "@hornwitser/fagc_integration",
   "version": "0.0.3",
   "description": "Clusterio plugin for integrating with Factorio Anti-Greifer Cooperation",
-  "main": "index.js",
+  "main": "info.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint \"*.js\"",
@@ -32,12 +32,12 @@
     "@clusterio/lib": "^2.0.0-alpha.13",
     "@clusterio/web_ui": "^2.0.0-alpha.13",
     "babel-loader": "^8.2.0",
-    "eslint": "^7.13.0",
+    "eslint": "^8.45.0",
     "null-loader": "^4.0.1",
     "react": "^16.13.1",
-    "webpack": "^5.73.0",
-    "webpack-cli": "^4.9.2",
-    "webpack-merge": "^5.3.0"
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-merge": "^5.9.0"
   },
   "dependencies": {
     "fagc-api-wrapper": "^1.28.2"

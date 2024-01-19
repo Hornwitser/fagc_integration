@@ -1,6 +1,21 @@
 "use strict";
 const { FAGCWrapper } = require("fagc-api-wrapper");
 const lib = require("@clusterio/lib");
+const { BaseControllerPlugin } = require("@clusterio/controller");
+
+const {
+	GetOwnCommunityRequest,
+	ListCommunitiesRequest,
+	ListCategoriesRequest,
+	ListReportsRequest,
+	GetReportRequest,
+	CreateReportRequest,
+	RevokeReportRequest,
+	GetRevocationRequest,
+	ListRevocationsRequest,
+	GetOwnGuildRequest,
+	SetOwnGuildConfigRequest,
+} = require("./info");
 
 
 function toISOString(input) {
@@ -19,9 +34,21 @@ function stringifyDates(report) {
 	};
 }
 
-class ControllerPlugin extends lib.BaseControllerPlugin {
+class ControllerPlugin extends BaseControllerPlugin {
 	async init() {
 		this.createFagcWrapper();
+
+		this.controller.handle(GetOwnCommunityRequest, this.handleGetOwnCommunityRequest.bind(this));
+		this.controller.handle(ListCommunitiesRequest, this.handleListCommunitiesRequest.bind(this));
+		this.controller.handle(ListCategoriesRequest, this.handleListCategoriesRequest.bind(this));
+		this.controller.handle(ListReportsRequest, this.handleListReportsRequest.bind(this));
+		this.controller.handle(GetReportRequest, this.handleGetReportRequest.bind(this));
+		this.controller.handle(CreateReportRequest, this.handleCreateReportRequest.bind(this));
+		this.controller.handle(RevokeReportRequest, this.handleRevokeReportRequest.bind(this));
+		this.controller.handle(GetRevocationRequest, this.handleGetRevocationRequest.bind(this));
+		this.controller.handle(ListRevocationsRequest, this.handleListRevocationsRequest.bind(this));
+		this.controller.handle(GetOwnGuildRequest, this.handleGetOwnGuildRequest.bind(this));
+		this.controller.handle(SetOwnGuildConfigRequest, this.handleSetOwnGuildConfigRequest.bind(this));
 	}
 
 	createFagcWrapper() {
@@ -43,80 +70,79 @@ class ControllerPlugin extends lib.BaseControllerPlugin {
 		}
 	}
 
-	async getOwnCommunityRequestHandler() {
-		return {
-			community: await this.fagc.communities.fetchOwnCommunity({})
-		};
+	async handleGetOwnCommunityRequest() {
+		return await this.fagc.communities.fetchOwnCommunity({});
 	}
 
-	async listCommunitiesRequestHandler() {
-		return {
-			list: await this.fagc.communities.fetchAll({}),
-		};
+	async handleListCommunitiesRequest() {
+		return await this.fagc.communities.fetchAll({});
 	}
 
-	async listCategoriesRequestHandler() {
-		return {
-			list: await this.fagc.categories.fetchAll({})
-		};
+	async handleListCategoriesRequest() {
+		return await this.fagc.categories.fetchAll({});
 	}
 
-	async listReportsRequestHandler(message) {
-		let { playername } = message.data;
+	async handleListReportsRequest(request) {
+		let { playername } = request;
 		let list = await this.fagc.reports.fetchAll({ playername });
-		list = list.map(stringifyDates);
-		return { list };
+		return list.map(stringifyDates);
 	}
 
-	async getReportRequestHandler(message) {
-		let report = await this.fagc.reports.fetchReport({ reportId: message.data.id });
+	async handleGetReportRequest(request) {
+		let report = await this.fagc.reports.fetchReport({ reportId: request.id });
 		if (report !== null) {
 			report = stringifyDates(report);
 		}
-		return { report };
+		return report;
 	}
 
-	async createReportRequestHandler(message) {
-		let report = await this.fagc.reports.create({ report: message.data.report });
-		return { id: report.id };
+	async handleCreateReportRequest(request) {
+		let report = await this.fagc.reports.create({ report: request });
+		return report.id;
 	}
 
-	async revokeReportRequestHandler(message) {
-		let { reportId, adminId } = message.data;
+	async handleRevokeReportRequest(request) {
+		let { reportId, adminId } = request;
 		await this.fagc.revocations.revoke({ reportId, adminId });
 	}
 
-	async listRevocationsRequestHandler() {
+	async handleListRevocationsRequest() {
 		let list = await this.fagc.revocations.fetchAll({});
-		list = list.map(stringifyDates);
-		return { list };
+		return list.map(stringifyDates);
 	}
 
-	async getRevocationRequestHandler(message) {
-		let revocation = await this.fagc.revocations.fetchRevocation({ revocationId: message.data.id});
+	async handleGetRevocationRequest(request) {
+		let revocation = await this.fagc.revocations.fetchRevocation({ revocationId: request.id });
 		if (revocation !== null) {
 			revocation = stringifyDates(revocation);
 		}
-		return { revocation };
+		return revocation;
 	}
 
-	async getOwnGuildRequestHandler() {
+	async handleGetOwnGuildRequest() {
 		let guildId = this.controller.config.get("fagc_integration.discord_guild_id");
 		if (!guildId) {
-			return { guild: null };
+			return null;
 		}
-		return { guild: await this.fagc.communities.fetchGuildConfig({ guildId }) };
+		const guild = await this.fagc.communities.fetchGuildConfig({ guildId });
+		if (!guild) {
+			return null;
+		}
+		return {
+			trustedCommunities: guild.trustedCommunities,
+			categoryFilters: guild.categoryFilters,
+		};
 	}
 
-	async setOwnGuildConfigRequestHandler(message) {
+	async handleSetOwnGuildConfigRequest(request) {
 		let guildId = this.controller.config.get("fagc_integration.discord_guild_id");
 		if (!guildId) {
 			throw new lib.RequestError("Guild ID not configured");
 		}
 		await this.fagc.communities.setGuildConfig({ config: {
 			guildId,
-			trustedCommunities: message.data.trustedCommunities,
-			categoryFilters: message.data.categoryFilters,
+			trustedCommunities: request.trustedCommunities,
+			categoryFilters: request.categoryFilters,
 		}});
 	}
 

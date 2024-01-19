@@ -16,7 +16,7 @@ module.exports = (env = {}) => merge(common(env), {
 			name: "fagc_integration",
 			library: { type: "var", name: "plugin_fagc_integration" },
 			exposes: {
-				"./info": "./info.js",
+				"./": "./info.js",
 				"./package.json": "./package.json",
 				"./web": "./web/index.jsx",
 			},
