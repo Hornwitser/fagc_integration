@@ -1,8 +1,8 @@
 "use strict";
-const { libConfig, libLink, libUsers } = require("@clusterio/lib");
+const lib = require("@clusterio/lib");
 
 
-class ControllerConfigGroup extends libConfig.PluginConfigGroup {}
+class ControllerConfigGroup extends lib.PluginConfigGroup {}
 ControllerConfigGroup.defaultAccess = ["controller", "host", "control"];
 ControllerConfigGroup.groupName = "fagc_integration";
 ControllerConfigGroup.define({
@@ -29,63 +29,63 @@ ControllerConfigGroup.define({
 });
 ControllerConfigGroup.finalize();
 
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.guild.get_own",
 	title: "Get details for Discord server",
 	description: "Get FAGC details for the Discord Server set in the controller config.",
 	grantByDefault: true,
 });
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.guild.set_own_config",
 	title: "Set details for Discord server",
 	description: "Set FAGC details for the Discord Server set in the controller config.",
 });
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.community.get_own",
 	title: "Get own FAGC community",
 	description: "Get details for the community the API key is issued to.",
 	grantByDefault: true,
 });
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.community.list",
 	title: "List FAGC communities",
 	description: "Get the full list of communities present on FAGC.",
 	grantByDefault: true,
 });
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.category.list",
 	title: "List FAGC categories",
 	description: "Get the full list of categories present on FAGC.",
 	grantByDefault: true,
 });
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.report.list",
 	title: "List FAGC reports",
 	description: "View all reports present on FAGC.",
 	grantByDefault: true,
 });
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.report.get",
 	title: "Get FAGC report",
 	description: "Get the details of a report on FAGC.",
 	grantByDefault: true,
 });
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.report.create",
 	title: "Create FAGC report",
 	description: "Report players to FAGC.",
 });
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.report.revoke",
 	title: "Revoke FAGC report",
 	description: "Revoke existing report from this community.",
 });
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.revocation.list",
 	title: "List FAGC revocations",
 	description: "View all revocations from this community.",
 });
-libUsers.definePermission({
+lib.definePermission({
 	name: "fagc_integration.revocation.get",
 	title: "Get FAGC revocation",
 	description: "Get the details of a revocation from this community on FAGC.",
@@ -151,7 +151,7 @@ module.exports = {
 	],
 
 	messages: {
-		getOwnCommunity: new libLink.Request({
+		getOwnCommunity: new lib.Request({
 			type: "fagc_integration:get_own_community",
 			links: ["control-controller"],
 			permission: "fagc_integration.community.get_own",
@@ -164,7 +164,7 @@ module.exports = {
 				},
 			},
 		}),
-		listCommunities: new libLink.Request({
+		listCommunities: new lib.Request({
 			type: "fagc_integration:list_communities",
 			links: ["control-controller"],
 			permission: "fagc_integration.community.list",
@@ -175,7 +175,7 @@ module.exports = {
 				},
 			},
 		}),
-		listCategories: new libLink.Request({
+		listCategories: new lib.Request({
 			type: "fagc_integration:list_categories",
 			links: ["control-controller"],
 			permission: "fagc_integration.category.list",
@@ -194,7 +194,7 @@ module.exports = {
 				},
 			},
 		}),
-		listReports: new libLink.Request({
+		listReports: new lib.Request({
 			type: "fagc_integration:list_reports",
 			links: ["control-controller"],
 			permission: "fagc_integration.report.list",
@@ -209,7 +209,7 @@ module.exports = {
 				},
 			},
 		}),
-		getReport: new libLink.Request({
+		getReport: new lib.Request({
 			type: "fagc_integration:get_report",
 			links: ["control-controller"],
 			permission: "fagc_integration.report.get",
@@ -225,7 +225,7 @@ module.exports = {
 				}
 			},
 		}),
-		createReport: new libLink.Request({
+		createReport: new lib.Request({
 			type: "fagc_integration:create_report",
 			links: ["control-controller"],
 			permission: "fagc_integration.report.create",
@@ -249,7 +249,7 @@ module.exports = {
 				"id": { type: "string" },
 			},
 		}),
-		revokeReport: new libLink.Request({
+		revokeReport: new lib.Request({
 			type: "fagc_integration:revoke_report",
 			links: ["control-controller"],
 			permission: "fagc_integration.report.revoke",
@@ -258,7 +258,7 @@ module.exports = {
 				"adminId": { type: "string" },
 			},
 		}),
-		getRevocation: new libLink.Request({
+		getRevocation: new lib.Request({
 			type: "fagc_integration:get_revocation",
 			links: ["control-controller"],
 			permission: "fagc_integration.revocation.get",
@@ -274,7 +274,7 @@ module.exports = {
 				}
 			},
 		}),
-		listRevocations: new libLink.Request({
+		listRevocations: new lib.Request({
 			type: "fagc_integration:list_revocations",
 			links: ["control-controller"],
 			permission: "fagc_integration.revocation.list",
@@ -285,7 +285,7 @@ module.exports = {
 				},
 			},
 		}),
-		getOwnGuild: new libLink.Request({
+		getOwnGuild: new lib.Request({
 			type: "fagc_integration:get_own_guild",
 			links: ["control-controller"],
 			permission: "fagc_integration.guild.get_own",
@@ -305,7 +305,7 @@ module.exports = {
 				},
 			},
 		}),
-		setOwnGuildConfig: new libLink.Request({
+		setOwnGuildConfig: new lib.Request({
 			type: "fagc_integration:set_own_guild_config",
 			links: ["control-controller"],
 			permission: "fagc_integration.guild.set_own_config",

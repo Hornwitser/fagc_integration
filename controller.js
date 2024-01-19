@@ -1,7 +1,6 @@
 "use strict";
 const { FAGCWrapper } = require("fagc-api-wrapper");
-const libPlugin = require("@clusterio/lib/plugin");
-const libErrors = require("@clusterio/lib/errors");
+const lib = require("@clusterio/lib");
 
 
 function toISOString(input) {
@@ -20,7 +19,7 @@ function stringifyDates(report) {
 	};
 }
 
-class ControllerPlugin extends libPlugin.BaseControllerPlugin {
+class ControllerPlugin extends lib.BaseControllerPlugin {
 	async init() {
 		this.createFagcWrapper();
 	}
@@ -112,7 +111,7 @@ class ControllerPlugin extends libPlugin.BaseControllerPlugin {
 	async setOwnGuildConfigRequestHandler(message) {
 		let guildId = this.controller.config.get("fagc_integration.discord_guild_id");
 		if (!guildId) {
-			throw new libErrors.RequestError("Guild ID not configured");
+			throw new lib.RequestError("Guild ID not configured");
 		}
 		await this.fagc.communities.setGuildConfig({ config: {
 			guildId,

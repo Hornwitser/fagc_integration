@@ -6,7 +6,7 @@ import {
 import events from "events";
 import { useHistory, useParams } from "react-router-dom";
 
-import { libPlugin } from "@clusterio/lib";
+import * as lib from "@clusterio/lib";
 import { notifyErrorHandler, useAccount, PageLayout, SectionHeader, ControlContext } from "@clusterio/web_ui";
 import info from "../info";
 
@@ -669,7 +669,7 @@ function UserViewPageExtra(props) {
 }
 
 
-export class WebPlugin extends libPlugin.BaseWebPlugin {
+export class WebPlugin extends lib.BaseWebPlugin {
 	async init() {
 		this.pages = [
 			{
